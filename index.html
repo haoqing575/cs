@@ -3,192 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>内网穿透-网站延迟测速（纯前端版）</title>
+    <title>内网穿透-80端口测速（无跨域版）</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft Yahei", Arial, sans-serif;
-        }
-        body {
-            background: #f5f7fa;
-            padding: 30px 20px;
-        }
-        .speed-card {
-            max-width: 700px;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.06);
-            padding: 24px;
-        }
-        .speed-card h1 {
-            font-size: 22px;
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .table-header {
-            display: flex;
-            background: #f8f9fa;
-            border-radius: 8px 8px 0 0;
-            padding: 12px 18px;
-            font-weight: 600;
-            color: #666;
-        }
-        .col1 {
-            width: 65%;
-        }
-        .col2 {
-            width: 35%;
-            text-align: right;
-        }
-        .site-list {
-            margin-top: 8px;
-        }
-        .site-item {
-            display: flex;
-            align-items: center;
-            padding: 16px 18px;
-            border-bottom: 1px solid #f5f5f5;
-        }
-        .site-item:last-child {
-            border-bottom: none;
-        }
-        .site-url {
-            width: 65%;
-            color: #2d7ff9;
-            text-decoration: none;
-            font-size: 15px;
-            word-break: break-all;
-        }
-        .site-url:hover {
-            text-decoration: underline;
-        }
-        .site-delay {
-            width: 35%;
-            text-align: right;
-            font-size: 15px;
-            font-weight: 500;
-        }
-        .loading {
-            color: #faad14;
-        }
-        .fast {
-            color: #52c41a;
-        }
-        .slow {
-            color: #ff4d4f;
-        }
-        .error {
-            color: #999;
-        }
-        .retry-btn {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .retry-btn button {
-            padding: 8px 24px;
-            background: #2d7ff9;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-        .retry-btn button:hover {
-            background: #1f6fe8;
-        }
+        * {margin: 0;padding: 0;box-sizing: border-box;font-family: "Microsoft Yahei", Arial, sans-serif;}
+        body {background: #f5f7fa;padding: 30px 20px;}
+        .speed-card {max-width: 700px;margin: 0 auto;background: #fff;border-radius: 12px;box-shadow: 0 2px 15px rgba(0,0,0,0.06);padding: 24px;}
+        .speed-card h1 {font-size: 22px;color: #333;margin-bottom: 20px;padding-bottom: 15px;border-bottom: 1px solid #f0f0f0;}
+        .table-header {display: flex;background: #f8f9fa;border-radius: 8px 8px 0 0;padding: 12px 18px;font-weight: 600;color: #666;}
+        .col1 {width: 65%;}
+        .col2 {width: 35%;text-align: right;}
+        .site-list {margin-top: 8px;}
+        .site-item {display: flex;align-items: center;padding: 16px 18px;border-bottom: 1px solid #f5f5f5;}
+        .site-item:last-child {border-bottom: none;}
+        .site-url {width: 65%;color: #2d7ff9;text-decoration: none;font-size: 15px;word-break: break-all;}
+        .site-url:hover {text-decoration: underline;}
+        .site-delay {width: 35%;text-align: right;font-size: 15px;font-weight: 500;}
+        .loading {color: #faad14;}
+        .fast {color: #52c41a;}
+        .slow {color: #ff4d4f;}
+        .error {color: #999;}
+        .retry-btn {margin-top: 20px;text-align: center;}
+        .retry-btn button {padding: 8px 24px;background: #2d7ff9;color: #fff;border: none;border-radius: 6px;cursor: pointer;font-size: 14px;transition: background 0.2s;}
+        .retry-btn button:hover {background: #1f6fe8;}
     </style>
 </head>
 <body>
     <div class="speed-card">
-        <h1>内网穿透 - 真实访问延迟测速</h1>
+        <h1>内网穿透80端口 - 真实延迟测速</h1>
         <div class="table-header">
-            <div class="col1">检测目标（HTTP）</div>
+            <div class="col1">检测目标（HTTP/80）</div>
             <div class="col2">响应延迟</div>
         </div>
-        <div class="site-list" id="siteList">
-            <!-- 测速项由JS渲染 -->
-        </div>
-        <div class="retry-btn">
-            <button onclick="initTest()">重新测速</button>
-        </div>
+        <div class="site-list" id="siteList"></div>
+        <div class="retry-btn"><button onclick="initTest()">重新测速</button></div>
     </div>
 
     <script>
-        // ********** 在这里修改你的内网穿透域名/地址 **********
+        // ********** 改这里的域名/接口，保留http://，端口80可省略 **********
         const websites = [
-            "psro.top",
-            "a.psro.top/api/card",
-            "yg.psro.top/api/card",
-            "lsj.psro.top/api/card",
-            "dg.psro.top/api/card"
+            "http://psro.top",
+            "http://a.psro.top/api/card",
+            "http://yg.psro.top/api/card",
+            "http://lsj.psro.top/api/card",
+            "http://dg.psro.top/api/card"
         ];
-        // 延迟阈值（可修改，大于此值标为慢）
-        const slowThreshold = 0.5; // 0.5秒
-        // 超时时间（毫秒）
-        const timeout = 20000; // 20秒
-        
-        // 初始化测速
-        window.onload = function() {
-            initTest();
-        };
+        const slowThreshold = 0.5; // 慢阈值（秒）
+        const timeout = 20000; // 20秒超时
 
-        // 核心测速函数：纯前端浏览器发起请求，和手动打开一致
-        async function testDelay(site) {
-            const url = `http://${site}?t=${new Date().getTime()}`; // 加时间戳避免缓存
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeout); // 自定义超时
-            try {
-                const start = performance.now();
-                // 发起HEAD请求（无正文，精准测延迟），失败则回退GET
-                await fetch(url, {
-                    method: 'HEAD',
-                    signal: controller.signal,
-                    cache: 'no-cache',
-                    credentials: 'include', // 携带cookie，适配穿透校验
-                    headers: {
-                        'User-Agent': navigator.userAgent, // 用浏览器真实UA
-                        'Accept': '*/*',
-                        'Connection': 'keep-alive'
+        // 初始化测速
+        window.onload = initTest;
+
+        // 核心测速：用script标签绕开CORS，无跨域限制
+        function testDelay(site) {
+            return new Promise((resolve) => {
+                const timestamp = new Date().getTime();
+                const testUrl = `${site}?t=${timestamp}&_=${Math.random()}`; // 双重防缓存
+                let start = performance.now();
+                let timer = null;
+
+                // 创建script标签发起请求
+                const script = document.createElement('script');
+                script.src = testUrl;
+                script.async = true;
+
+                // 成功回调（请求完成即触发）
+                script.onload = script.onreadystatechange = function() {
+                    if (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete') {
+                        clearTimeout(timer);
+                        const delay = (performance.now() - start) / 1000;
+                        resolve(Math.round(delay * 1000) / 1000);
+                        // 清理标签
+                        script.parentNode.removeChild(script);
                     }
-                });
-                clearTimeout(timeoutId);
-                const delay = (performance.now() - start) / 1000;
-                return Math.round(delay * 1000) / 1000; // 保留3位小数
-            } catch (e) {
-                // HEAD请求失败，用GET请求（部分服务器禁用HEAD）
-                try {
-                    const start = performance.now();
-                    await fetch(url, {
-                        method: 'GET',
-                        signal: controller.signal,
-                        cache: 'no-cache',
-                        credentials: 'include',
-                        headers: {
-                            'User-Agent': navigator.userAgent,
-                            'Accept': '*/*',
-                            'Connection': 'keep-alive'
-                        }
-                    });
-                    clearTimeout(timeoutId);
-                    const delay = (performance.now() - start) / 1000;
-                    return Math.round(delay * 1000) / 1000;
-                } catch (err) {
-                    clearTimeout(timeoutId);
-                    return false; // 测速失败
-                }
-            }
+                };
+
+                // 失败/超时回调
+                script.onerror = function() {
+                    clearTimeout(timer);
+                    resolve(false);
+                    script.parentNode.removeChild(script);
+                };
+
+                // 20秒超时
+                timer = setTimeout(() => {
+                    resolve(false);
+                    script.parentNode.removeChild(script);
+                }, timeout);
+
+                // 插入标签发起请求
+                document.body.appendChild(script);
+            });
         }
 
-        // 逐条测速（避免请求拥挤）
-        async function testOneByOne(siteList, index = 0) {
-            if (index >= siteList.length) return;
-            const site = siteList[index];
+        // 逐条测速，避免请求拥挤
+        async function testOneByOne(index = 0) {
+            if (index >= websites.length) return;
+            const site = websites[index];
             const item = document.querySelector(`[data-site="${site}"] .site-delay`);
             // 执行测速
             const delay = await testDelay(site);
@@ -199,26 +109,25 @@
                 item.className = 'site-delay error';
                 item.textContent = '访问失败';
             }
-            // 间隔200ms测下一个
-            setTimeout(() => testOneByOne(siteList, index + 1), 200);
+            // 间隔300ms测下一个，适配内网穿透
+            setTimeout(() => testOneByOne(index + 1), 300);
         }
 
-        // 渲染测速项+启动测速
+        // 渲染测速项+启动
         function initTest() {
             const siteList = document.getElementById('siteList');
-            // 清空原有内容
             siteList.innerHTML = '';
-            // 渲染所有测速项为加载中
+            // 渲染所有项为加载中
             websites.forEach(site => {
                 siteList.innerHTML += `
                     <div class="site-item" data-site="${site}">
-                        <a href="http://${site}" target="_blank" class="site-url">http://${site}</a>
+                        <a href="${site}" target="_blank" class="site-url">${site}</a>
                         <div class="site-delay loading">检测中...</div>
                     </div>
                 `;
             });
-            // 启动逐条测速
-            testOneByOne(websites);
+            // 启动测速
+            testOneByOne();
         }
     </script>
 </body>
